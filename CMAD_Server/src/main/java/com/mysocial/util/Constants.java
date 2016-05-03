@@ -35,7 +35,6 @@ public interface Constants {
 	
 	public static final String REST_URL_REGISTER = "user/register";
 	public static final String REST_URL_LOGIN = "user/auth";
-	//public static final String REST_URL_LOAD_SIGNED_IN_USER = "user?signedIn=true";
 	public static final String REST_URL_LOAD_SIGNED_IN_USER = "user";
 	
 	public static final String REST_URL_GET_BLOGS = "blogs";

@@ -14,6 +14,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 
 public class RegisterHandler implements Handler<RoutingContext> {
@@ -60,19 +61,20 @@ public class RegisterHandler implements Handler<RoutingContext> {
 					if (registered) {
 						System.out.println("registered OK");
 						response.setStatusCode(HttpResponseStatus.OK.code());
-						routingContext.session().put(SESSION_USER_KEY,  u.getId().toHexString());
+						routingContext.removeCookie(COOKIE_HEADER);
+						routingContext.addCookie(Cookie.cookie(COOKIE_HEADER, u.getId().toHexString()));
 						System.out.println("Added into session " + routingContext.session().get(SESSION_USER_KEY));
 					} else {
 						System.out.println("registered FAIL");
 						response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-						routingContext.session().put(SESSION_USER_KEY, null);
+						routingContext.removeCookie(COOKIE_HEADER);
 					}
 					System.out.println("Response end");
 					response.end();
 				} else {
 					System.out.println("Returning BAD REQUEST");
 					response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-					routingContext.session().put(SESSION_USER_KEY, null);
+					routingContext.removeCookie(COOKIE_HEADER);
 					response.end(resultHandler.cause().getMessage());
 					MySocialUtil.handleFailure(resultHandler, this.getClass());
 				}
@@ -83,8 +85,7 @@ public class RegisterHandler implements Handler<RoutingContext> {
 			System.err.println(e.getMessage());
 			e.printStackTrace();
 			response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-			//routingContext.removeCookie(COOKIE_HEADER);
-			routingContext.session().put(SESSION_USER_KEY, null);
+			routingContext.removeCookie(COOKIE_HEADER);
 			response.end();
 		}
 	}

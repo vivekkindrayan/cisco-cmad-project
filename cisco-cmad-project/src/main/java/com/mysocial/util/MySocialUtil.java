@@ -7,7 +7,6 @@ import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 
 import com.mongodb.MongoClient;

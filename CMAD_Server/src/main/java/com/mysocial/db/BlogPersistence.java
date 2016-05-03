@@ -131,7 +131,6 @@ public class BlogPersistence {
 			blogCollection.insertOne(serialize(b));
 		} else {
 			blogCollection.replaceOne(new Document(KEY_ID, b.getId()), serialize(b));
-			//blogCollection.updateOne(new Document(KEY_ID, b.getId()), serialize(b));
 		}
 	}
 	

@@ -65,6 +65,7 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 		
+		loadProperties();
 		Server s = new Server();
 		s.deployVerticles();
 	}

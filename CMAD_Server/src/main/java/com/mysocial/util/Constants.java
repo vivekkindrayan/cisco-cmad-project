@@ -2,13 +2,13 @@ package com.mysocial.util;
 
 public interface Constants {
 
-	public static final int MONGODB_PORT = 27017;
-	public static final int HTTP_PORT = 8082;
+	public static final String CONFIG_PROPS_FILE = "config.properties";
 	
-	public static final String MONGODB_HOST = "173.36.54.98";
+	public static final String PROP_KEY_MONGODB_HOST = "MONGODB_HOST";
+	public static final String PROP_KEY_MONGODB_PORT = "MONGODB_PORT";
+	public static final String PROP_KEY_HTTP_PORT = "HTTP_PORT";
+	
 	public static final String MONGODB_URL_PREFIX = "mongodb://";
-	
-	public static final String MONGODB_URL = MONGODB_URL_PREFIX + MONGODB_HOST + ":" + Integer.toString(MONGODB_PORT);
 	
 	public static final String DB_NAME = "mysocialdb";
 	public static final String DB_PACKAGE_NAME = "com.mysocial";

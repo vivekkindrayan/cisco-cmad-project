@@ -9,6 +9,7 @@ import io.vertx.ext.web.RoutingContext;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
+import com.mysocial.Server;
 import com.mysocial.beans.User;
 import com.mysocial.db.UserPersistence;
 
@@ -25,7 +26,7 @@ public class MySocialUtil {
 	 */
 	public static MongoDatabase getMongoDB(){
 		if(mongoDb.get()==null){
-			MongoClientURI connectionString = new MongoClientURI(MONGODB_URL);
+			MongoClientURI connectionString = new MongoClientURI(Server.MONGODB_URL);
 			mongoClient = new MongoClient(connectionString);	
 			MongoDatabase mongoDatabase = mongoClient.getDatabase(DB_NAME);
 			mongoDb.set(mongoDatabase);

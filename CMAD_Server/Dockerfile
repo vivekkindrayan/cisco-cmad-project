@@ -8,7 +8,7 @@ ENV VERTICLE_FILE target/CMAD_Server-0.0.1-SNAPSHOT.jar
 # Set the location of the verticles
 ENV VERTICLE_HOME /usr/verticles
 
-EXPOSE 8080
+EXPOSE 8082
 
 # Copy your verticle to the container                   
 COPY $VERTICLE_FILE $VERTICLE_HOME/

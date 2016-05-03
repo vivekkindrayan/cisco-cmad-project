@@ -34,8 +34,7 @@ public class LoadUserHandler implements Handler<RoutingContext> {
 						User u = (User) resultHandler.result();
 						if (u != null) {
 							response.setStatusCode(HttpResponseStatus.OK.code());
-							routingContext.removeCookie(COOKIE_HEADER);
-							routingContext.addCookie(Cookie.cookie(COOKIE_HEADER, u.getId().toHexString()));
+							routingContext.session().put(SESSION_USER_KEY, u.getId().toHexString());
 							ObjectMapper mapper = new ObjectMapper();
 							mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 							try {
@@ -48,13 +47,13 @@ public class LoadUserHandler implements Handler<RoutingContext> {
 							}
 						} else {
 							response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-							routingContext.removeCookie(COOKIE_HEADER);
+							routingContext.session().put(SESSION_USER_KEY, null);
 							response.end();
 						}
 
 					} else {
 						response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-						routingContext.removeCookie(COOKIE_HEADER);
+						routingContext.session().put(SESSION_USER_KEY, null);
 						response.end(resultHandler.cause().getMessage());
 						MySocialUtil.handleFailure(resultHandler, this.getClass());
 					}
@@ -64,7 +63,7 @@ public class LoadUserHandler implements Handler<RoutingContext> {
 			System.err.println(ex.getMessage());
 			ex.printStackTrace();
 			response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-			routingContext.removeCookie(COOKIE_HEADER);
+			routingContext.session().put(SESSION_USER_KEY, null);
 			response.end();
 		}
 	}

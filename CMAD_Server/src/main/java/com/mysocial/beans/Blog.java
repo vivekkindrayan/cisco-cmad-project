@@ -1,5 +1,7 @@
 package com.mysocial.beans;
 
+import java.util.List;
+
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Field;
@@ -22,7 +24,7 @@ public class Blog {
 	private String userFirst;
 	private String userLast;
 	private String date;
-	private Comment[] comments;
+	private List<Comment> comments;
 	
 	
 	public String getId() {
@@ -73,10 +75,10 @@ public class Blog {
 	public void setDate(String date) {
 		this.date = date;
 	}
-	public Comment[] getComments() {
+	public List<Comment> getComments() {
 		return comments;
 	}
-	public void setComments(Comment[] comments) {
+	public void setComments(List<Comment> comments) {
 		this.comments = comments;
 	}
 	

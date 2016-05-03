@@ -14,6 +14,7 @@ public interface Constants {
 	public static final String DB_PACKAGE_NAME = "com.mysocial";
 	
 	public static final String COOKIE_HEADER = "Set-Cookie";
+	public static final String SESSION_USER_KEY = "loggedInUser";
 	
 	public static final String COLLECTION_NAME_COMPANY = "company";
 	public static final String COLLECTION_NAME_SITE = "site";

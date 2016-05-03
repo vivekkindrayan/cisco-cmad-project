@@ -2,6 +2,8 @@ package com.mysocial.verticles.handlers;
 
 import static com.mysocial.util.Constants.*;
 
+import org.bson.types.ObjectId;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysocial.beans.User;
@@ -12,7 +14,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 
 public class RegisterHandler implements Handler<RoutingContext> {
@@ -33,6 +34,7 @@ public class RegisterHandler implements Handler<RoutingContext> {
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			User u = mapper.readValue(jsonStr, User.class);
+			u.setId(new ObjectId());
 			System.out.println("Got user with name " + u.getUserName());
 
 			vertx.executeBlocking(future -> {
@@ -53,19 +55,24 @@ public class RegisterHandler implements Handler<RoutingContext> {
 				future.complete(registered);
 			}, resultHandler -> {
 				if (resultHandler.succeeded()) {
+					System.out.println("ResultHandler succeeded");
 					Boolean registered = (Boolean) resultHandler.result();
 					if (registered) {
+						System.out.println("registered OK");
 						response.setStatusCode(HttpResponseStatus.OK.code());
-						routingContext.removeCookie(COOKIE_HEADER);
-						routingContext.addCookie(Cookie.cookie(COOKIE_HEADER, u.getId().toHexString()));
+						routingContext.session().put(SESSION_USER_KEY,  u.getId().toHexString());
+						System.out.println("Added into session " + routingContext.session().get(SESSION_USER_KEY));
 					} else {
+						System.out.println("registered FAIL");
 						response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-						routingContext.removeCookie(COOKIE_HEADER);
+						routingContext.session().put(SESSION_USER_KEY, null);
 					}
+					System.out.println("Response end");
 					response.end();
 				} else {
+					System.out.println("Returning BAD REQUEST");
 					response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-					routingContext.removeCookie(COOKIE_HEADER);
+					routingContext.session().put(SESSION_USER_KEY, null);
 					response.end(resultHandler.cause().getMessage());
 					MySocialUtil.handleFailure(resultHandler, this.getClass());
 				}
@@ -76,7 +83,8 @@ public class RegisterHandler implements Handler<RoutingContext> {
 			System.err.println(e.getMessage());
 			e.printStackTrace();
 			response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-			routingContext.removeCookie(COOKIE_HEADER);
+			//routingContext.removeCookie(COOKIE_HEADER);
+			routingContext.session().put(SESSION_USER_KEY, null);
 			response.end();
 		}
 	}

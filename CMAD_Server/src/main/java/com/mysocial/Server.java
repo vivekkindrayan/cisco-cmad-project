@@ -14,6 +14,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
+import io.vertx.ext.web.handler.SessionHandler;
+import io.vertx.ext.web.sstore.LocalSessionStore;
 
 import com.mysocial.verticles.MySocialVerticle;
 public class Server {
@@ -36,6 +38,7 @@ public class Server {
 		router = Router.router(vertx);
 		
 		router.route().handler(CookieHandler.create());
+		router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 	    router.route().handler(BodyHandler.create());
 		router.route().failureHandler(ErrorHandler.create());
 	}

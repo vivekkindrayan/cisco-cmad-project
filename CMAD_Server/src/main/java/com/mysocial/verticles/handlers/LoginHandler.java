@@ -3,6 +3,7 @@ package com.mysocial.verticles.handlers;
 import static com.mysocial.util.Constants.COOKIE_HEADER;
 import static com.mysocial.util.Constants.RESPONSE_HEADER_CONTENT_TYPE;
 import static com.mysocial.util.Constants.RESPONSE_HEADER_JSON;
+import static com.mysocial.util.Constants.SESSION_USER_KEY;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,20 +48,19 @@ public class LoginHandler implements Handler<RoutingContext> {
 					if (authenticated) {
 						User u = UserPersistence.getUserByUsername(auth.getUserName());
 						System.out.println("Authenticated successfully");
-						routingContext.removeCookie(COOKIE_HEADER);
-						routingContext.addCookie(Cookie.cookie(COOKIE_HEADER, u.getId().toHexString()));
+						routingContext.session().put(SESSION_USER_KEY,  u.getId().toHexString());
 						response.setStatusCode(HttpResponseStatus.OK.code());
 					} 
 					else {
 						System.err.println("Authentication failed");
-						routingContext.removeCookie(COOKIE_HEADER);
+						routingContext.session().put(SESSION_USER_KEY, null);
 						response.setStatusCode(HttpResponseStatus.FORBIDDEN.code());
 					}
 					response.end();
 				} 
 				else {
 					response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-					routingContext.removeCookie(COOKIE_HEADER);
+					routingContext.session().put(SESSION_USER_KEY, null);
 					response.end(resultHandler.cause().getMessage());
 					MySocialUtil.handleFailure(resultHandler, this.getClass());
 				}
@@ -71,7 +71,7 @@ public class LoginHandler implements Handler<RoutingContext> {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 			response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-			routingContext.removeCookie(COOKIE_HEADER);
+			routingContext.session().put(SESSION_USER_KEY, null);
 			response.end();
 		}
 	}

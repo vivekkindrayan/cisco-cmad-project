@@ -13,9 +13,7 @@ import static com.mysocial.util.MySocialUtil.*;
 import com.mongodb.BasicDBObject;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoIterable;
 import com.mysocial.beans.Blog;
 import com.mysocial.beans.Comment;
 import com.mysocial.util.MySocialUtil;
@@ -44,7 +42,7 @@ public class BlogPersistence {
 		    @Override
 		    public void apply(final Document document) {
 		    	try {
-		    		blogs.add(deSerialize(document));
+		    		blogs.add(populateCommentsForBlog(deSerialize(document)));
 		    	} catch (Exception ex) {
 		    		handleException(ex);
 		    	}
@@ -64,7 +62,7 @@ public class BlogPersistence {
 		    @Override
 		    public void apply(final Document document) {
 		    	try {
-		    		blogs.add(deSerialize(document));
+		    		blogs.add(populateCommentsForBlog(deSerialize(document)));
 		    	} catch (Exception ex) {
 		    		handleException(ex);
 		    	}
@@ -81,7 +79,7 @@ public class BlogPersistence {
 		    @Override
 		    public void apply(final Document document) {
 		    	try {
-		    		blogs.add(deSerialize(document));
+		    		blogs.add(populateCommentsForBlog(deSerialize(document)));
 		    	} catch (Exception ex) {
 		    		handleException(ex);
 		    	}
@@ -98,7 +96,7 @@ public class BlogPersistence {
 		    @Override
 		    public void apply(final Document document) {
 		    	try {
-		    		blogs.add(deSerialize(document));
+		    		blogs.add(populateCommentsForBlog(deSerialize(document)));
 		    	} catch (Exception ex) {
 		    		handleException(ex);
 		    	}
@@ -111,27 +109,20 @@ public class BlogPersistence {
 		}
 	}
 	
+	public static Blog populateCommentsForBlog (Blog b)
+	{
+		List<Comment> commentsList = CommentPersistence.getCommentsForBlogId(b.getId());
+		if (commentsList == null || commentsList.size() == 0) {
+			b.setComments(new ArrayList<Comment>());
+		} else {
+			b.setComments(commentsList);
+		}
+		return b;
+	}
+	
 	public static void saveBlog(Blog b) throws Exception
 	{
-		MongoIterable<String> collections = db.listCollectionNames();
-		boolean collectionExists = false;
-		for (String collection : collections) {
-			if (collection.equals(COLLECTION_NAME_BLOG)) {
-				collectionExists = true;
-				break;
-			}
-		}
-		
-		if (!collectionExists) {
-			db.createCollection(COLLECTION_NAME_BLOG);
-		}
-		MongoCollection<Document> blogCollection = db.getCollection(COLLECTION_NAME_BLOG);
-		Blog existingBlog = getBlogForId(b.getId());
-		if (existingBlog == null) {
-			blogCollection.insertOne(serialize(b));
-		} else {
-			blogCollection.replaceOne(new Document(KEY_ID, b.getId()), serialize(b));
-		}
+		MySocialUtil.getCollectionForDB(COLLECTION_NAME_BLOG).insertOne(serialize(b));
 	}
 	
 	private static Document serialize(Blog b) throws Exception
@@ -145,7 +136,7 @@ public class BlogPersistence {
 				.append(KEY_TAGS, b.getTags().toLowerCase())
 				.append(KEY_DATE, b.getDate());
 		
-		if (b.getComments() != null && b.getComments().length > 0) {
+		if (b.getComments() != null && b.getComments().size() > 0) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("[");
 			for (Comment c : b.getComments()) {
@@ -172,10 +163,6 @@ public class BlogPersistence {
         String content = (String) document.get(KEY_CONTENT);
         String tags = (String) document.get(KEY_TAGS);
         String date = (String) document.get(KEY_DATE);
-        Comment[] comments = (Comment[]) document.get(KEY_COMMENTS);
-        if (comments == null ) {
-        	comments = new Comment[]{};
-        }
         
         Blog b = new Blog();
         b.setId(id.toHexString());
@@ -186,7 +173,6 @@ public class BlogPersistence {
         b.setUserFirst(first);
         b.setUserLast(last);
         b.setUserId(new ObjectId(userId));
-        b.setComments(comments);
         
         return b;
 	}

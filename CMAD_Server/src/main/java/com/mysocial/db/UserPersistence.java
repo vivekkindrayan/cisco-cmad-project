@@ -12,7 +12,6 @@ import org.bson.types.ObjectId;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoIterable;
 import com.mysocial.beans.User;
 import com.mysocial.util.MySocialUtil;
 
@@ -118,19 +117,7 @@ public class UserPersistence {
 	
 	public static void saveUser (User u) throws Exception
 	{
-		MongoIterable<String> collections = db.listCollectionNames();
-		boolean collectionExists = false;
-		for (String collection : collections) {
-			if (collection.equals(COLLECTION_NAME_USER)) {
-				collectionExists = true;
-				break;
-			}
-		}
-		
-		if (!collectionExists) {
-			db.createCollection(COLLECTION_NAME_USER);
-		}
-		db.getCollection(COLLECTION_NAME_USER).insertOne(serialize(u));
+		MySocialUtil.getCollectionForDB(COLLECTION_NAME_USER).insertOne(serialize(u));
 	}
 	
 	private static Document serialize(User u) throws Exception

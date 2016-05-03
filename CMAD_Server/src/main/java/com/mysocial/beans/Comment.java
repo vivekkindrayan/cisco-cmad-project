@@ -6,19 +6,19 @@ import org.mongodb.morphia.annotations.Id;
 public class Comment {
 
 	@Id
-    private ObjectId id;
+    private String id;
 	private String content;
-    private ObjectId userId;
+	private String date;
     private ObjectId blogId;
-    private String date;
+    private ObjectId userId;
     private String userLast;
     private String userFirst;
     
-	public ObjectId getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(ObjectId id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

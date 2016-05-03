@@ -2,13 +2,19 @@ package com.mysocial.util;
 
 import java.security.MessageDigest;
 
+import org.bson.Document;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
 import com.mysocial.Server;
 import com.mysocial.beans.User;
 import com.mysocial.db.UserPersistence;
@@ -19,6 +25,7 @@ public class MySocialUtil {
 	
 	private static MongoClient mongoClient = null;
 	private static ThreadLocal<MongoDatabase> mongoDb = new ThreadLocal<MongoDatabase>();
+	private static ThreadLocal<Datastore> mongoTL = new ThreadLocal<Datastore>();
 	
 	/**
 	 * Method to retrieve a mongo database client from the thread local storage
@@ -33,6 +40,36 @@ public class MySocialUtil {
 			return mongoDatabase;
 		}
 		return mongoDb.get();
+	}
+	
+	public static Datastore getMongoDataStore(){
+		Morphia morphia = new Morphia();
+		morphia.mapPackage(DB_PACKAGE_NAME);
+		Datastore datastore = morphia.createDatastore(mongoClient, DB_NAME);
+		if(mongoTL.get()==null){
+			datastore.ensureIndexes();
+			mongoTL.set(datastore);
+		}
+		return mongoTL.get();
+	}
+
+	public static MongoCollection<Document> getCollectionForDB (String dbName)
+	{
+		MongoDatabase db = getMongoDB();
+		MongoIterable<String> collections = db.listCollectionNames();
+		boolean collectionExists = false;
+		for (String collection : collections) {
+			if (collection.equals(dbName)) {
+				collectionExists = true;
+				break;
+			}
+		}
+		
+		if (!collectionExists) {
+			db.createCollection(dbName);
+		}
+		
+		return db.getCollection(dbName);
 	}
 	
 	public static void handleFailure(AsyncResult<Object> resultHandler, @SuppressWarnings("rawtypes") Class clazz) {
@@ -66,12 +103,7 @@ public class MySocialUtil {
 	
 	public static User getSignedInUser (RoutingContext routingContext)
 	{
-		String signedInUserId = null;
-		Cookie authCookie = routingContext.getCookie(COOKIE_HEADER);
-		if (authCookie != null) {
-			signedInUserId = authCookie.getValue();
-		}
-
+		String signedInUserId = routingContext.session().get(SESSION_USER_KEY);
 		User u = null;
 		if (signedInUserId != null) {
 			u = UserPersistence.getUserById(signedInUserId);

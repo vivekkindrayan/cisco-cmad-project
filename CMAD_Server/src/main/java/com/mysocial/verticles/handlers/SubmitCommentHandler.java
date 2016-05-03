@@ -3,6 +3,7 @@ package com.mysocial.verticles.handlers;
 import static com.mysocial.util.Constants.COOKIE_HEADER;
 import static com.mysocial.util.Constants.RESPONSE_HEADER_CONTENT_TYPE;
 import static com.mysocial.util.Constants.RESPONSE_HEADER_JSON;
+import static com.mysocial.util.Constants.SESSION_USER_KEY;
 
 import java.util.Date;
 
@@ -42,7 +43,7 @@ public class SubmitCommentHandler implements Handler<RoutingContext> {
 			ObjectMapper commentMapper = new ObjectMapper();
 			commentMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			Comment c = commentMapper.readValue(commentJsonStr, Comment.class);
-			c.setId(new ObjectId());
+			c.setId(new ObjectId().toHexString());
 			c.setDate(Long.toString(new Date().getTime()));
 			c.setBlogId(new ObjectId(blogId));
 			System.out.println("Got comment from request");
@@ -67,19 +68,18 @@ public class SubmitCommentHandler implements Handler<RoutingContext> {
 					Comment savedComment = (Comment) resultHandler.result();
 					if (savedComment != null && savedComment.getUserId() != null) {
 						response.setStatusCode(HttpResponseStatus.OK.code());
-						routingContext.removeCookie(COOKIE_HEADER);
-						routingContext.addCookie(Cookie.cookie(COOKIE_HEADER, c.getUserId().toHexString()));
+						routingContext.session().put(SESSION_USER_KEY, c.getUserId().toHexString());
 						response.end();
 					} else {
 						System.err.println("Failed to retrieve saved comment object OR did not find a signed in user");
 						response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-						routingContext.removeCookie(COOKIE_HEADER);
+						routingContext.session().put(SESSION_USER_KEY, null);
 						response.end();
 					}
 
 				} else {
 					response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-					routingContext.removeCookie(COOKIE_HEADER);
+					routingContext.session().put(SESSION_USER_KEY, null);
 					response.end(resultHandler.cause().getMessage());
 					MySocialUtil.handleFailure(resultHandler, this.getClass());
 				}
@@ -90,7 +90,7 @@ public class SubmitCommentHandler implements Handler<RoutingContext> {
 			System.err.println(ex.getMessage());
 			ex.printStackTrace();
 			response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-			routingContext.removeCookie(COOKIE_HEADER);
+			routingContext.session().put(SESSION_USER_KEY, null);
 			response.end();
 		}
 	}
